@@ -1,0 +1,35 @@
+{% extends 'admin_connected_base.html.twig' %}
+
+{% block title %}Liste des historiques de reservations !
+{% endblock %}
+
+{% block body %}
+	<div class="bg-light p-3">
+		<h3>Liste des historiques de reservations :
+		</h3>
+	</div>
+	<div class="ml-2 mt-2">
+		<table class="table table-striped" style="color: #1d1e20;">
+			<thead>
+				<tr>
+					<th scope="col">date de reservation</th>
+					<th scope="col">Heure de reservation</th>
+					<th scope="col">Instructeur</th>
+					<th scope="col">Status</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for reservation in reservations %}
+					<tr>
+						<td>{{reservation.resDatetime|date("m/d/Y") }}</td>
+						<td>{{reservation.resDatetime|date("h:i") }}</td>
+						<td>{{reservation.instructor.firstName}}
+							~
+							{{reservation.instructor.lastName}}</td>
+						<td>Payée</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+{% endblock %}

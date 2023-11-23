@@ -1,0 +1,61 @@
+{% extends 'admin_connected_base.html.twig' %}
+
+{% block title %}Payer avec Votre formation
+{% endblock %}
+
+{% block body %}
+
+	{# checkout and payment section #}
+	<section>
+		<div class="row mt-3 font-weight-bold">
+			<div class="col-3">
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="stripeRadio" id="stripeRadio" checked>
+					<label class="form-check-label" for="stripeRadio">
+						payer avec stripe
+					</label>
+				</div>
+				<div class="form-check">
+					<input class="form-check-input" type="radio" name="AlmaPayRadio" id="AlmaPayRadio">
+					<label class="form-check-label" for="AlmaPayRadio">
+						payer avec Almapay
+					</label>
+				</div>
+			</div>
+		</div>
+		<div class="col-9">
+			<div
+				id="stripe">
+				<!-- Display a payment form -->
+				<div id="checkout"></div>
+				<script src="https://js.stripe.com/v3/"></script>
+				<script src="js/stripe.js" defer></script>
+			</div>
+			<div id="almapay" class="d-none mt-2">
+				<section>
+					<div id="alma-in-page"></div>
+				</section>
+				<script src="https://cdn.jsdelivr.net/npm/@alma/in-page@2.x/dist/index.umd.js"></script>
+				<script src="js/almapay.js" type="text/javascript"></script>
+			</div>
+		</div>
+	</div>
+</section>
+
+
+<script type="text/javascript">
+	$(document).ready(function () {
+$("#stripeRadio").on("click", function (e) {
+$("#stripe").removeClass("d-none");
+$("#almapay").addClass("d-none");
+$("#almapay").prop('checked', false);
+
+});
+$("#AlmaPayRadio").on("click", function (e) {
+$("#almapay").removeClass("d-none");
+$("#stripe").addClass("d-none");
+$("#stripe").prop('checked', false);
+
+});
+});
+</script>{% endblock %}
