@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Création d'espace stripe en ligne</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="stylesheet" href="css/bootstrap-pulse.min.css" > 
+    <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+<div class="container mt-5">
+  <h2>Création d'un sous compte stripe Moniteur</h2>
+<form class="my-form" action="/create-person" method="post">
+    <input type="hidden" name="token-account" id="token-account">
+    <input type="hidden" name="token-person" id="token-person">
+    <label>
+      <span>Business Name</span>
+      <input class="inp-company-name form-control">
+    </label>
+    <fieldset>
+      <legend>Business Address</legend>
+      <label>
+        <span>Street Address Line 1</span>
+        <input class="inp-company-street-address1 form-control">
+      </label>
+      <label>
+        <span>City</span>
+        <input class="inp-company-city form-control">
+      </label>
+      <label>
+        <span>State</span>
+        <input class="inp-company-state form-control">
+      </label>
+      <label>
+        <span>Postal Code</span>
+        <input class="inp-company-zip form-control">
+      </label>
+    </fieldset>
+    <label>
+      <span>Representative First Name</span>
+      <input class="inp-person-first-name form-control">
+    </label>
+    <label>
+      <span>Representative Last Name</span>
+      <input class="inp-person-last-name form-control">
+    </label>
+    <fieldset>
+      <legend>Representative Address</legend>
+      <label>
+        <span>Street Address Line 1</span>
+        <input class="inp-person-street-address1 form-control">
+      </label>
+      <label>
+        <span>City</span>
+        <input class="inp-person-city form-control">
+      </label>
+      <label>
+        <span>State</span>
+        <input class="inp-person-state form-control">
+      </label>
+      <label>
+        <span>Postal Code</span>
+        <input class="inp-person-zip form-control">
+      </label>
+    </fieldset>
+    <button class="btn btn-primary">Submit</button>
+  </form>
+
+  <p>By clicking, you agree to <a href="#">our terms</a> and the <a href="https://stripe.com/connect-account/legal">Stripe Connected Account Agreement</a>.</p>
+
+</div>
+</body>
+  <script src="script.js" type="text/javascript"></script>
+
+</html>

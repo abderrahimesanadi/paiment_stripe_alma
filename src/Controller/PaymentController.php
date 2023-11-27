@@ -11,18 +11,8 @@ use App\Entity\Payment;
 
 class PaymentController extends AbstractController
 {
-    private $passerelle;
 
     public const ERROR_PAYMENT = "une erreur s'est produite lors du paiement";
-
-    private $manager;
-
-    public function __construct(EntityManagerInterface $manager)
-    {
-        $this->passerelle = new \Stripe\StripeClient($_ENV['STRIPE_SECRET_KEY']);;
-
-        $this->manager = $manager;
-    }
 
     /**
      * @Route("/checkout", name="app_checkout")
@@ -38,14 +28,15 @@ class PaymentController extends AbstractController
     public function paymentStripe(Request $request): Response
     {
         try {
+            $stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET_KEY']);;
             // il faut essayer de verifier (retrieve)si le produit existe via son id sinon on le cree
-            $product = $this->passerelle->products->create([
+            $product = $stripe->products->create([
                 'name' => '15 Heure d\'heure de conduite',
                 'default_price_data' => ['unit_amount_decimal' => '70000', 'currency' => 'EUR']
             ]);
             $product_id = $product['id'];
             $product_price = $product['default_price'];
-            $checkout_session = $this->passerelle->checkout->sessions->create([
+            $checkout_session = $stripe->checkout->sessions->create([
                 'ui_mode' => 'embedded',
                 'line_items' => [[
                     'price' => $product_price,
@@ -68,20 +59,23 @@ class PaymentController extends AbstractController
     }
 
     /**
-     * @Route("/payment-almapay", name="app_payment_almapay")
+     *@Route("/payment-almapay", name="app_payment_almapay")
      */
     public function paymentAlmapay(Request $request): Response
     {
-        $alma = new \Alma\API\Client($_ENV['ALMA_SECRET_KEY'], ['mode' => \Alma\API\Client::TEST_MODE]);
         try {
+            $jsoncontent = json_decode($request->getContent());
+
+            $purchaseAmount = $jsoncontent->purchaseAmount;
+            $alma = new \Alma\API\Client($_ENV['ALMA_SECRET_KEY'], ['mode' => \Alma\API\Client::TEST_MODE]);
             $payment = $alma->payments->createPayment(
                 [
-                    'origin'   => 'online',
+                    'origin'   => 'online_in_page',
                     'payment'  =>
                     [
                         'return_url'         => $_ENV['APP_DOMAIN'] . '/success',
                         'failure_return_url' => $_ENV['APP_DOMAIN'] . '/error',
-                        'purchase_amount'    => 10000,
+                        'purchase_amount'    => $purchaseAmount,
                         'installments_count' => 3,
                         'locale'             => 'fr',
                         'billing_address'    =>
@@ -97,8 +91,8 @@ class PaymentController extends AbstractController
                     ],
                     'customer' =>
                     [
-                        'first_name' => 'John',
-                        'last_name'  => 'Doe',
+                        'first_name' => 'Mike',
+                        'last_name'  => 'bono',
                         'email'      => 'john-doe@yopmail.fr',
                         'phone'      => '06 12 34 56 78'
                     ],
@@ -107,10 +101,10 @@ class PaymentController extends AbstractController
 
             $paiment_id = parse_url($payment->return_url, PHP_URL_QUERY);
             $paiment_id = explode('=', $paiment_id);
+            // il faut prévoir d'enregistrer le paiment id dans la bd
             return new Response(json_encode($paiment_id[1]));
         } catch (\Alma\API\RequestError $error) {
             header("HTTP/1.1 500 Internal Server Error");
-            //die($error->getMessage());
             return new Response(json_encode($error->getMessage()));
         }
 
@@ -155,5 +149,42 @@ class PaymentController extends AbstractController
                 'message' => 'le paiement a échoué'
             ]
         );
+    }
+
+    /**
+     * @Route("/create-account", name="app_account_stripe")
+     */
+    public function createStripeAccount(Request $request): Response
+    {
+        try {
+            $jsoncontent = json_decode($request->getContent());
+            //$account_token = $jsoncontent->token - account;
+            //$person_token = $jsoncontent->token - person;
+            $stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET_KEY']);
+            $account = $stripe->accounts->create([
+                'country' => 'FR',
+                'type' => 'custom',
+                'capabilities' => [
+                    'card_payments' => ['requested' => true],
+                    'transfers' => ['requested' => true],
+                ],
+                'account_token' => 'ct_1OH4sHGmGM3fW1jTFIGS95kR',
+            ]);
+
+            // Set your secret key. Remember to switch to your live secret key in production.
+            // See your keys here: https://dashboard.stripe.com/apikeys
+
+            $stripe->accounts->createPerson(
+                $account->id,
+                [
+                    'first_name' => 'Jane',
+                    'last_name' => 'Diaz',
+                    'person_token' => 'cpt_1OH4sHGmGM3fW1jTgbaDONiG',
+                ]
+            );
+        } catch (\Throwable $th) {
+
+            return new Response(json_encode($th->getMessage()));
+        }
     }
 }

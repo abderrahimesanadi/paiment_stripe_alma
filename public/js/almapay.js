@@ -1,28 +1,40 @@
-// Create a Checkout Session as soon as the page loads
-async function initializeAlma() {
-    const response = await fetch("/payment-almapay", {
-        method: "POST",
-    });
 
-    const { MON_PAYMENT_ID } = await response.json();
-
-    return MON_PAYMENT_ID;
-}
-
+var purchaseAmount = 100000;
 const inPage = Alma.InPage.initialize({
     merchantId: "11xqxN9ZKoQTTrQWaJIfCz1Hr9Ew1kyvQd",//il faut prévoir de le mettre dans le fichier d'environnment d'angular
-    amountInCents: 10000, // 100 euros
+    amountInCents: purchaseAmount, // en cent
     installmentsCount: 3, // En 3 fois
     selector: "#alma-in-page",
-
     // Optionnels
     environment: "TEST",
     locale: 'FR',
-
     onIntegratedPayButtonClicked: () => {
-        // J'appelle l'API pour créer le paiement, si l'api retourne un code de succès :
-        MON_PAYMENT_ID = initializeAlma();
+        fetch("/payment-almapay", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ purchaseAmount: purchaseAmount })
+        }).then(response => {
+            return response.json()
+        }).then(function (MON_PAYMENT_ID) {
+            inPage.startPayment({
+                paymentId: MON_PAYMENT_ID
+            });
+        }).catch(function (error) {
+            window.replace("http://localhost:8080/error");
+        })
+    }
+});
 
+
+
+/*onIntegratedPayButtonClicked: () => {
+    // J'appelle l'API pour créer le paiement, si l'api retourne un code de succès :
+    fetch("/payment-almapay", {
+        method: "POST",
+    }).then(MON_PAYMENT_ID => {
         inPage.startPayment({
             paymentId: MON_PAYMENT_ID, // J'utilise le payment ID généré au dessus.
             onPaymentSucceeded: () => {
@@ -35,5 +47,6 @@ const inPage = Alma.InPage.initialize({
                 console.log("user closed modal");
             }
         });
-    }
-});
+    })
+}
+});*/
