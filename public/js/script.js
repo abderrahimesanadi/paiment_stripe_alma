@@ -36,6 +36,24 @@ async function handleForm(event) {
     if (accountResult.token && personResult.token) {
         document.querySelector('#token-account').value = accountResult.token.id;
         document.querySelector('#token-person').value = personResult.token.id;
-        myForm.submit();
+        //myForm.submit();
+
+        fetch("/create-account", {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                tokenAccount: accountResult.token.id,
+                tokenPerson: personResult.token.id
+            })
+        }).then(response => {
+            return response.json()
+        }).then(function (ACCOUNT_ID) {
+            alert("Compte " + ACCOUNT_ID + " a été crée avec succés");
+        }).catch(function (error) {
+            window.replace("http://localhost:8080/error");
+        })
     }
 }

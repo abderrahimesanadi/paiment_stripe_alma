@@ -23,19 +23,36 @@ class PaymentController extends AbstractController
     }
 
     /**
+     * @Route("/stripe-monitor", name="app_monitor")
+     */
+    public function showMonitorFormSTripe(): Response
+    {
+        return $this->render('payment/account-monitor.html.twig');
+    }
+
+    /**
      * @Route("/payment-stripe", name="app_payment_stripe")
      */
     public function paymentStripe(Request $request): Response
     {
         try {
-            $stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET_KEY']);;
+            $stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET_KEY']);
             // il faut essayer de verifier (retrieve)si le produit existe via son id sinon on le cree
-            $product = $stripe->products->create([
-                'name' => '15 Heure d\'heure de conduite',
-                'default_price_data' => ['unit_amount_decimal' => '70000', 'currency' => 'EUR']
-            ]);
-            $product_id = $product['id'];
-            $product_price = $product['default_price'];
+            try {
+                // todo à remplacer par un test sur la colum stripe_id
+                $product = $stripe->products->retrieve(
+                    'prod_P5cIaq337X7uBA',
+                    []
+                );
+                $product_price = $product->default_price;
+            } catch (\Throwable $th) {
+                $product = $stripe->products->create([
+                    'name' => '18 Heure d\'heure de conduite',
+                    'default_price_data' => ['unit_amount_decimal' => '80000', 'currency' => 'EUR']
+                ]);
+                //add column stripe_id 
+            }
+            $product_price = $product->default_price;
             $checkout_session = $stripe->checkout->sessions->create([
                 'ui_mode' => 'embedded',
                 'line_items' => [[
@@ -157,34 +174,57 @@ class PaymentController extends AbstractController
     public function createStripeAccount(Request $request): Response
     {
         try {
+
             $jsoncontent = json_decode($request->getContent());
-            //$account_token = $jsoncontent->token - account;
-            //$person_token = $jsoncontent->token - person;
+
+            $account_token = $jsoncontent->tokenAccount;
+            $person_token = $jsoncontent->tokenPerson;
+
             $stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET_KEY']);
             $account = $stripe->accounts->create([
                 'country' => 'FR',
                 'type' => 'custom',
                 'capabilities' => [
-                    'card_payments' => ['requested' => true],
                     'transfers' => ['requested' => true],
                 ],
-                'account_token' => 'ct_1OH4sHGmGM3fW1jTFIGS95kR',
+                'account_token' => $account_token,
             ]);
 
-            // Set your secret key. Remember to switch to your live secret key in production.
-            // See your keys here: https://dashboard.stripe.com/apikeys
 
             $stripe->accounts->createPerson(
                 $account->id,
                 [
-                    'first_name' => 'Jane',
-                    'last_name' => 'Diaz',
-                    'person_token' => 'cpt_1OH4sHGmGM3fW1jTgbaDONiG',
+                    'person_token' => $person_token,
                 ]
             );
         } catch (\Throwable $th) {
 
             return new Response(json_encode($th->getMessage()));
         }
+        return new Response(json_encode($account->id));
+    }
+
+    /**
+     * @Route("/stripe-transfert", name="app_transfert_stripe")
+     */
+    public function transfertToStripeAccount(Request $request): Response
+    {
+        try {
+
+            $stripe = new \Stripe\StripeClient($_ENV['STRIPE_SECRET_KEY']);
+
+            $transfert = $stripe->transfers->create([
+                'amount' => 4000, // calculable
+                'currency' => 'eur',
+                'destination' => 'acct_1OHT8mGdLyXH3aC0', // sous compte stripe du moniteur on le recupére de la bd
+                'transfer_group' => 'Enseignant',
+            ]);
+            // si le transerfe s'est bien passé ($transfert->id) il faire faire une mise à jour de la base de donné
+
+        } catch (\Throwable $th) {
+
+            return new Response(json_encode($th->getMessage()));
+        }
+        return new Response(json_encode("Transfert Réussie"));
     }
 }
