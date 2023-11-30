@@ -1,9 +1,11 @@
 
 var purchaseAmount = 100000;
+var installmentsCount = 3;
+
 const inPage = Alma.InPage.initialize({
     merchantId: "11xqxN9ZKoQTTrQWaJIfCz1Hr9Ew1kyvQd",//il faut prévoir de le mettre dans le fichier d'environnment d'angular
     amountInCents: purchaseAmount, // en cent
-    installmentsCount: 3, // En 3 fois
+    installmentsCount: 3, // En 3/4 fois
     selector: "#alma-in-page",
     // Optionnels
     environment: "TEST",

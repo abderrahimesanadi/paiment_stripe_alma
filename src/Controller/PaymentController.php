@@ -219,7 +219,7 @@ class PaymentController extends AbstractController
                 'destination' => 'acct_1OHT8mGdLyXH3aC0', // sous compte stripe du moniteur on le recupére de la bd
                 'transfer_group' => 'Enseignant',
             ]);
-            // si le transerfe s'est bien passé ($transfert->id) il faire faire une mise à jour de la base de donné
+            // si le transerfe s'est bien passé ($transfert->id) il faut faire une mise à jour de la base de donné
 
         } catch (\Throwable $th) {
 
